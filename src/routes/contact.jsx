@@ -1,6 +1,13 @@
+/* eslint-disable react-refresh/only-export-components */
+import { useMemo } from "react";
 import { Form, useLoaderData, useFetcher } from "react-router-dom";
 
-import { getContact, updateContact } from "../contacts";
+import {
+  CONTACT_CATEGORY_OPTIONS,
+  DEFAULT_CATEGORY,
+  getContact,
+  updateContact,
+} from "../contacts";
 
 export async function loader({ params }) {
   const contact = await getContact(params.contactId);
@@ -22,28 +29,39 @@ export async function action({ request, params }) {
 
 export default function Contact() {
   const { contact } = useLoaderData();
-  // const contact = {
-  //   first: "Your",
-  //   last: "Name",
-  //   avatar: "https://robohash.org/you.png?size=200x200",
-  //   twitter: "your_handle",
-  //   notes: "Some notes",
-  //   favorite: true,
-  // };
+  const categoryLabelMap = useMemo(() => {
+    return CONTACT_CATEGORY_OPTIONS.reduce(
+      (acc, option) => {
+        acc[option.value] = option.label;
+        return acc;
+      },
+      { [DEFAULT_CATEGORY]: "Uncategorized" }
+    );
+  }, []);
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+    []
+  );
+  const createdAt = contact.createdAt ? new Date(contact.createdAt) : null;
+  const categoryLabel =
+    categoryLabelMap[contact.category ?? DEFAULT_CATEGORY];
+  const avatarUrl =
+    contact.avatar || `https://robohash.org/${contact.id}.png?size=200x200`;
+  const hasQuickLinks =
+    contact.email || contact.phone || contact.twitter || contact.location;
 
   return (
     <div id="contact">
-      <div>
-        <img
-          key={contact.avatar}
-          src={
-            contact.avatar ||
-            `https://robohash.org/${contact.id}.png?size=200x200`
-          }
-        />
+      <div className="contact-avatar">
+        <img key={avatarUrl} src={avatarUrl} alt="Contact avatar" />
       </div>
 
-      <div>
+      <div className="contact-details">
         <h1>
           {contact.first || contact.last ? (
             <>
@@ -51,21 +69,68 @@ export default function Contact() {
             </>
           ) : (
             <i>No Name</i>
-          )}{" "}
+          )}
           <Favorite contact={contact} />
         </h1>
 
-        {contact.twitter && (
-          <p>
-            <a target="_blank" href={`https://twitter.com/${contact.twitter}`}>
-              {contact.twitter}
-            </a>
+        <div className="contact-overview">
+          {contact.company && (
+            <span className="contact-company">{contact.company}</span>
+          )}
+          <span className="contact-category">{categoryLabel}</span>
+        </div>
+
+        {hasQuickLinks && (
+          <ul className="contact-quick-links">
+            {contact.email && (
+              <li>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </li>
+            )}
+            {contact.phone && (
+              <li>
+                <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+              </li>
+            )}
+            {contact.twitter && (
+              <li>
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`https://twitter.com/${contact.twitter}`}
+                >
+                  @{contact.twitter}
+                </a>
+              </li>
+            )}
+            {contact.location && <li>{contact.location}</li>}
+          </ul>
+        )}
+
+        {contact.notes && (
+          <section className="contact-notes">
+            <h2>Notes</h2>
+            <p>{contact.notes}</p>
+          </section>
+        )}
+
+        {(contact.tags ?? []).length > 0 && (
+          <div className="contact-tags">
+            {(contact.tags ?? []).map((tag) => (
+              <span key={tag} className="tag-chip">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {createdAt && (
+          <p className="contact-created-at">
+            Added on {dateFormatter.format(createdAt)}
           </p>
         )}
 
-        {contact.notes && <p>{contact.notes}</p>}
-
-        <div>
+        <div className="contact-actions">
           <Form action="edit">
             <button type="submit">Edit</button>
           </Form>
