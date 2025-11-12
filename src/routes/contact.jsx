@@ -29,6 +29,32 @@ export async function action({ request, params }) {
 
 export default function Contact() {
   const { contact } = useLoaderData();
+  const connectButtons = useMemo(
+    () => [
+      {
+        label: "Facebook",
+        href: "https://www.facebook.com/mhioey.thio",
+        description: "Mở trang Facebook",
+      },
+      {
+        label: "Instagram",
+        href: "https://www.instagram.com/",
+        description: "Truy cập Instagram",
+      },
+      {
+        label: "Zalo",
+        href: "https://zalo.me/0898124614",
+        description: "Kết nối bằng Zalo",
+      },
+      {
+        label: "Messenger",
+        href: "https://www.messenger.com",
+        description: "Nhắn tin Messenger",
+      },
+    ],
+    []
+  );
+
   const categoryLabelMap = useMemo(() => {
     return CONTACT_CATEGORY_OPTIONS.reduce(
       (acc, option) => {
@@ -57,96 +83,120 @@ export default function Contact() {
 
   return (
     <div id="contact">
-      <div className="contact-avatar">
-        <img key={avatarUrl} src={avatarUrl} alt="Contact avatar" />
-      </div>
-
-      <div className="contact-details">
-        <h1>
-          {contact.first || contact.last ? (
-            <>
-              {contact.first} {contact.last}
-            </>
-          ) : (
-            <i>No Name</i>
-          )}
-          <Favorite contact={contact} />
-        </h1>
-
-        <div className="contact-overview">
-          {contact.company && (
-            <span className="contact-company">{contact.company}</span>
-          )}
-          <span className="contact-category">{categoryLabel}</span>
+      <div className="contact-primary">
+        <div className="contact-avatar">
+          <img key={avatarUrl} src={avatarUrl} alt="Contact avatar" />
         </div>
 
-        {hasQuickLinks && (
-          <ul className="contact-quick-links">
-            {contact.email && (
-              <li>
-                <a href={`mailto:${contact.email}`}>{contact.email}</a>
-              </li>
+        <div className="contact-details">
+          <h1>
+            {contact.first || contact.last ? (
+              <>
+                {contact.first} {contact.last}
+              </>
+            ) : (
+              <i>No Name</i>
             )}
-            {contact.phone && (
-              <li>
-                <a href={`tel:${contact.phone}`}>{contact.phone}</a>
-              </li>
-            )}
-            {contact.twitter && (
-              <li>
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={`https://twitter.com/${contact.twitter}`}
-                >
-                  @{contact.twitter}
-                </a>
-              </li>
-            )}
-            {contact.location && <li>{contact.location}</li>}
-          </ul>
-        )}
+            <Favorite contact={contact} />
+          </h1>
 
-        {contact.notes && (
-          <section className="contact-notes">
-            <h2>Notes</h2>
-            <p>{contact.notes}</p>
-          </section>
-        )}
-
-        {(contact.tags ?? []).length > 0 && (
-          <div className="contact-tags">
-            {(contact.tags ?? []).map((tag) => (
-              <span key={tag} className="tag-chip">
-                #{tag}
-              </span>
-            ))}
+          <div className="contact-overview">
+            {contact.company && (
+              <span className="contact-company">{contact.company}</span>
+            )}
+            <span className="contact-category">{categoryLabel}</span>
           </div>
-        )}
 
-        {createdAt && (
-          <p className="contact-created-at">
-            Added on {dateFormatter.format(createdAt)}
-          </p>
-        )}
+          {hasQuickLinks && (
+            <ul className="contact-quick-links">
+              {contact.email && (
+                <li>
+                  <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                </li>
+              )}
+              {contact.phone && (
+                <li>
+                  <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                </li>
+              )}
+              {contact.twitter && (
+                <li>
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://twitter.com/${contact.twitter}`}
+                  >
+                    @{contact.twitter}
+                  </a>
+                </li>
+              )}
+              {contact.location && <li>{contact.location}</li>}
+            </ul>
+          )}
 
-        <div className="contact-actions">
-          <Form action="edit">
-            <button type="submit">Edit</button>
-          </Form>
-          <Form
-            method="post"
-            action="destroy"
-            onSubmit={(event) => {
-              if (!confirm("Please confirm you want to delete this record.")) {
-                event.preventDefault();
-              }
-            }}
-          >
-            <button type="submit">Delete</button>
-          </Form>
+          {contact.notes && (
+            <section className="contact-notes">
+              <h2>Notes</h2>
+              <p>{contact.notes}</p>
+            </section>
+          )}
+
+          {(contact.tags ?? []).length > 0 && (
+            <div className="contact-tags">
+              {(contact.tags ?? []).map((tag) => (
+                <span key={tag} className="tag-chip">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {createdAt && (
+            <p className="contact-created-at">
+              Added on {dateFormatter.format(createdAt)}
+            </p>
+          )}
+
+          <div className="contact-actions">
+            <Form action="edit">
+              <button type="submit">Edit</button>
+            </Form>
+            <Form
+              method="post"
+              action="destroy"
+              onSubmit={(event) => {
+                if (!confirm("Please confirm you want to delete this record.")) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              <button type="submit">Delete</button>
+            </Form>
+          </div>
         </div>
       </div>
+
+      <aside className="contact-connect-card">
+        <h2>Liên hệ với người này</h2>
+        <p className="connect-subtitle">
+          Chọn kênh phù hợp để kết nối nhanh với{" "}
+          {contact.first || contact.last || "liên hệ"}.
+        </p>
+        <div className="connect-buttons">
+          {connectButtons.map((button) => (
+            <a
+              key={button.label}
+              href={button.href}
+              target="_blank"
+              rel="noreferrer"
+              className="connect-button"
+            >
+              <span>{button.label}</span>
+              <small>{button.description}</small>
+            </a>
+          ))}
+        </div>
+      </aside>
     </div>
   );
 }
